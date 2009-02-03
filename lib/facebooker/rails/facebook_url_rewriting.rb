@@ -1,10 +1,10 @@
-module ::ActionController
-  class AbstractRequest                         
-    def relative_url_root
-      Facebooker.path_prefix
-    end                                         
-  end
+FACEBOOKER_REQUEST_CLASS.class_eval do
+  def relative_url_root
+    Facebooker.path_prefix
+  end                                         
+end
   
+module ::ActionController
   class Base
     def self.relative_url_root
       Facebooker.path_prefix

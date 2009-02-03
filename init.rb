@@ -1,3 +1,17 @@
+# Determine the appropriate Request class to modify (in Rails 2.3.0 this
+# changed from AbstractRequest to Request)
+# Normally we should be able to simply use ActionController.const_defined?('AbstractRequest')
+# instead of the begin/rescue block below, but for some reason this returns true at this
+# stage. Perhaps due to the autoload magic in action_controller.rb?
+begin
+  ActionController.const_get('AbstractRequest')
+  FACEBOOKER_REQUEST_CLASS = ActionController::AbstractRequest
+  FACEBOOKER_RAILS_PRE_2_3_0 = true
+rescue
+  FACEBOOKER_REQUEST_CLASS = ActionController::Request
+  FACEBOOKER_RAILS_PRE_2_3_0 = false
+end
+
 # Added support to the Facebooker.yml file for switching to the new profile design..
 # Config parsing needs to happen before files are required.
 facebook_config = "#{RAILS_ROOT}/config/facebooker.yml"
@@ -44,8 +58,8 @@ end
 # When making get requests, Facebook sends fb_sig parameters both in the query string
 # and also in the post body. We want to ignore the query string ones because they are one
 # request out of date
-# We only do thise when there are POST parameters so that IFrame linkage still works
-class ActionController::AbstractRequest
+# We only do this when there are POST parameters so that IFrame linkage still works
+FACEBOOKER_REQUEST_CLASS.class_eval do
   def query_parameters_with_facebooker
     if request_parameters.blank?
       query_parameters_without_facebooker
